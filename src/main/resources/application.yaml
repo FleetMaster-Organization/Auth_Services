@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: auth-security
+
+  # Configuración para TiDB (Protocolo MySQL)
+  datasource:
+    url: jdbc:mysql://${TIDB_HOST}:${TIDB_PORT:4000}/${TIDB_DB}
+    username: ${TIDB_USER}
+    password: ${TIDB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+server:
+  port: ${PORT:8080}
+
+#Eureka: Servicio de registro de direcciones para la ApiGateway
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+  instance:
+    # Esto es vital en Cloud Run para que Eureka no use IPs internas que cambian
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+#FeignClient: Servicio que permite la comunicacion entre microservicios
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
