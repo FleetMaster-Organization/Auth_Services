@@ -10,7 +10,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 server:
-  port: ${PORT:8080}
+  port: 8080
 
 #Eureka: Servicio de registro de direcciones para la ApiGateway
 eureka:
@@ -36,3 +36,13 @@ feign:
       default:
         connectTimeout: 5000
         readTimeout: 5000
+
+#Configuración JWT para autenticación
+app:
+  jwt:
+    # Clave secreta para firmar los tokens JWT (HS256)
+    secret: ${JWT_SECRET}
+    # Tiempo de expiración para access token (5 minutos en milisegundos)
+    access-expiration: ${JWT_ACCESS_EXPIRATION:300000}
+    # Tiempo de expiración para refresh token (7 días en milisegundos)
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
