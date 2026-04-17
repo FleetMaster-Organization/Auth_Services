@@ -17,8 +17,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/proyecto-web/auth
+            cd ~/proyecto-web/Auth_Services
             git pull origin master
             
             cd ~/proyecto-web
-            docker-compose up -d --build auth-security
+            docker compose up -d --build auth-security
