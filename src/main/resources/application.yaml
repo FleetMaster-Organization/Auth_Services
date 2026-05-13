@@ -2,14 +2,15 @@ spring:
   application:
     name: auth-security
 
+  # Configuración PostgreSQL (Supabase)
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:auth_db}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db
+    username: ${TIDB_USER}
+    password: ${TIDB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
 server:
-  port: 8081
+  port: ${PORT:8080}
 
 #Eureka: Servicio de registro de direcciones para la ApiGateway
 eureka:
