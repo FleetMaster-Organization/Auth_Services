@@ -2,9 +2,7 @@ package com.services.auth.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,18 +18,23 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "id_user", columnDefinition = "BINARY(16)", nullable = false,
-    updatable = false)
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "id_user", nullable = false, updatable = false)
     private UUID idUser;
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;
 
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
+
+    @Column(name = "enabled", nullable = false)
+    @Builder.Default
+    private boolean enabled = true;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -43,8 +46,8 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @Override
-    public boolean equals(Object o){
-        if (this ==  o) return true;
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (!(o instanceof User other)) return false;
         return idUser != null && idUser.equals(other.idUser);
     }

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 public class AuthService {
 
     private final UserRepository userRepository;
-
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -44,7 +44,6 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User user = userRepository.findByEmailWithRoles(request.getEmail())
@@ -52,8 +51,8 @@ public class AuthService {
 
         List<String> roles = extractRoles(user);
 
-        String accessToken = tokenProvider.generateAccessToken(user.getEmail(), roles, user.getIdUser(), accessExpiration);
-        String refreshToken = tokenProvider.generateRefreshToken(user.getEmail(), refreshExpiration);
+        String accessToken  = tokenProvider.generateAccessToken(user.getIdUser(), user.getEmail(), roles, accessExpiration);
+        String refreshToken = tokenProvider.generateRefreshToken(user.getIdUser(), refreshExpiration);
 
         refreshTokenRepository.save(RefreshToken.builder()
                 .user(user)
@@ -72,12 +71,12 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("Refresh token inválido"));
 
         if (storedToken.getExpirationDate().isBefore(Instant.now())) {
-            revokeAndSave(storedToken);
+            revokeToken(storedToken);
             throw new RuntimeException("Refresh token expirado");
         }
 
         if (storedToken.getLastActivity().isBefore(Instant.now().minusMillis(INACTIVITY_LIMIT_MS))) {
-            revokeAndSave(storedToken);
+            revokeToken(storedToken);
             throw new RuntimeException("Sesión expirada por inactividad de 30 minutos");
         }
 
@@ -87,29 +86,30 @@ public class AuthService {
         User user = storedToken.getUser();
         List<String> roles = extractRoles(user);
 
-        String newAccessToken = tokenProvider.generateAccessToken(user.getEmail(), roles, user.getIdUser(), accessExpiration);
+        String newAccessToken = tokenProvider.generateAccessToken(user.getIdUser(), user.getEmail(), roles, accessExpiration);
 
         return buildLoginResponse(newAccessToken, refreshToken, user, roles);
     }
 
+    /**
+     * Logout: revoca únicamente el refresh token del dispositivo actual.
+     * El userId viene del SecurityContext (subject del JWT parseado por JwtParsingFilter).
+     */
     @Transactional
     public void logout(String refreshToken) {
         refreshTokenRepository.findByToken(refreshToken)
-                .ifPresent(token -> {
-                    token.setRevoked(true);
-                    refreshTokenRepository.save(token);
-                });
+                .ifPresent(this::revokeToken);
+    }
+
+    private void revokeToken(RefreshToken token) {
+        token.setRevoked(true);
+        refreshTokenRepository.save(token);
     }
 
     private List<String> extractRoles(User user) {
         return user.getRoles().stream()
                 .map(Role::getNameRole)
                 .collect(Collectors.toList());
-    }
-
-    private void revokeAndSave(RefreshToken token) {
-        token.setRevoked(true);
-        refreshTokenRepository.save(token);
     }
 
     private LoginResponse buildLoginResponse(String accessToken, String refreshToken,

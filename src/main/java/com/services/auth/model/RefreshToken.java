@@ -21,10 +21,9 @@ import java.util.UUID;
 public class RefreshToken {
 
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @UuidGenerator(style = UuidGenerator.Style.TIME)
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "id_token", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "id_token", nullable = false, updatable = false)
     private UUID idToken;
 
     @ManyToOne(fetch = FetchType.LAZY)

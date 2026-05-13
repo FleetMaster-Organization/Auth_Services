@@ -23,27 +23,36 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateAccessToken(String email, List<String> roles, UUID idUser, long expirationMillis) {
+    /**
+     * Genera el access token.
+     * Subject: UUID del usuario (inmutable, nunca cambia aunque cambien email u otros datos).
+     * Claims adicionales: email, roles.
+     */
+    public String generateAccessToken(UUID idUser, String email, List<String> roles, long expirationMillis) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(idUser.toString())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .claim("type", "access")
+                .claim("email", email)
                 .claim("roles", roles)
-                .claim("idUser", idUser.toString())
                 .signWith(key(), Jwts.SIG.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(String email, long expirationMillis) {
+    /**
+     * Genera el refresh token.
+     * Subject: UUID del usuario.
+     */
+    public String generateRefreshToken(UUID idUser, long expirationMillis) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(idUser.toString())
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .claim("type", "refresh")
@@ -51,8 +60,13 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
+    /** Retorna el UUID del usuario (subject). */
+    public String getSubjectFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public String getEmailFromToken(String token) {
+        return parseClaims(token).get("email", String.class);
     }
 
     @SuppressWarnings("unchecked")

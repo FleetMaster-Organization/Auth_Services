@@ -2,15 +2,15 @@ spring:
   application:
     name: auth-security
 
-  # Configuración para TiDB (Protocolo MySQL)
+  # Configuración PostgreSQL (Supabase)
   datasource:
-    url: jdbc:mysql://${TIDB_HOST}:${TIDB_PORT:4000}/${TIDB_DB}
+    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db
     username: ${TIDB_USER}
     password: ${TIDB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 #Eureka: Servicio de registro de direcciones para la ApiGateway
 eureka:
@@ -42,7 +42,13 @@ app:
   jwt:
     # Clave secreta para firmar los tokens JWT (HS256)
     secret: ${JWT_SECRET}
-    # Tiempo de expiración para access token (5 minutos en milisegundos)
-    access-expiration: ${JWT_ACCESS_EXPIRATION:300000}
+    # Tiempo de expiración para access token (15 minutos en milisegundos)
+    access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
     # Tiempo de expiración para refresh token (7 días en milisegundos)
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html
+    api-docs:
+      path: /v3/api-docs

@@ -9,6 +9,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * Usado exclusivamente por el AuthenticationManager durante el proceso de login
+ * para validar credenciales (email + password) contra la base de datos.
+ * No participa en la validación de tokens JWT.
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -27,6 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .authorities(user.getRoles().stream()
                         .map(Role::getNameRole)
                         .toArray(String[]::new))
+                .disabled(!user.isEnabled())
                 .build();
     }
 }

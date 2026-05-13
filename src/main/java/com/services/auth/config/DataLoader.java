@@ -1,6 +1,5 @@
 package com.services.auth.config;
 
-
 import com.services.auth.model.Role;
 import com.services.auth.model.User;
 import com.services.auth.repository.RoleRepository;
@@ -13,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
+/**
+ * Carga inicial de datos: roles estáticos del sistema y usuario administrador por defecto.
+ * Los roles no se crean desde la API; son fijos y se definen aquí.
+ * El resto de usuarios los crea el administrador desde la interfaz.
+ */
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
@@ -23,43 +27,22 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     @Transactional
-    public void run(String... args){
-        if(userRepository.count()>0) {
-            return;
-        }
-
+    public void run(String... args) {
         Role adminRole = getOrCreateRole("ROLE_ADMINISTRADOR");
-        Role coordinadorRole = getOrCreateRole("ROLE_COORDINADOR");
-        Role despachadorRole = getOrCreateRole("ROLE_DESPACHADOR");
-        Role mecanicoRole = getOrCreateRole("ROLE_MECANICO");
+        getOrCreateRole("ROLE_COORDINADOR");
+        getOrCreateRole("ROLE_DESPACHADOR");
+        getOrCreateRole("ROLE_MECANICO");
 
-        User admin = User.builder()
-                .email("admin@fleetmaster.com")
-                .passwordHash(passwordEncoder.encode("AdminFleetMaster123"))
-                .roles(Set.of(adminRole))
-                .build();
-        userRepository.save(admin);
-
-        User coordinador = User.builder()
-                .email("coordinador@fleetmaster.com")
-                .passwordHash(passwordEncoder.encode("CoordFleetMaster123"))
-                .roles(Set.of(coordinadorRole))
-                .build();
-        userRepository.save(coordinador);
-
-        User despachador = User.builder()
-                .email("despachador@fleetmaster.com")
-                .passwordHash(passwordEncoder.encode("DespFleetMaster123"))
-                .roles(Set.of(despachadorRole))
-                .build();
-        userRepository.save(despachador);
-
-        User mecanico = User.builder()
-                .email("mecanico@fleetmaster.com")
-                .passwordHash(passwordEncoder.encode("MecaFleetMaster123"))
-                .roles(Set.of(mecanicoRole))
-                .build();
-        userRepository.save(mecanico);
+        if (!userRepository.existsByEmail("admin@fleetmaster.com")) {
+            User admin = User.builder()
+                    .fullName("Pompilio Roncancio")
+                    .email("admin@fleetmaster.com")
+                    .passwordHash(passwordEncoder.encode("AdminFleetMaster123"))
+                    .roles(Set.of(adminRole))
+                    .enabled(true)
+                    .build();
+            userRepository.save(admin);
+        }
     }
 
     private Role getOrCreateRole(String roleName) {
