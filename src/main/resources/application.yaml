@@ -1,26 +1,26 @@
 spring:
   application:
     name: auth-security
-
-  # Configuración PostgreSQL (Supabase)
+  # Configuración PostgreSQL (Supabase/TiDB)
   datasource:
     url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db
     username: ${TIDB_USER}
     password: ${TIDB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+# Configuración del Servidor
 server:
   port: ${PORT:8080}
 
-#Eureka: Servicio de registro de direcciones para la ApiGateway
+# Eureka: Registro y Descubrimiento
 eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
-    # Esto es vital en Cloud Run para que Eureka no use IPs internas que cambian
     prefer-ip-address: true
 
+# Monitoreo y Salud
 management:
   endpoints:
     web:
@@ -29,7 +29,8 @@ management:
   endpoint:
     health:
       show-details: always
-#FeignClient: Servicio que permite la comunicacion entre microservicios
+
+# Feign: Comunicación entre microservicios
 feign:
   client:
     config:
@@ -37,18 +38,16 @@ feign:
         connectTimeout: 5000
         readTimeout: 5000
 
-#Configuración JWT para autenticación
+# Configuración JWT Personalizada
 app:
   jwt:
-    # Clave secreta para firmar los tokens JWT (HS256)
     secret: ${JWT_SECRET}
-    # Tiempo de expiración para access token (15 minutos en milisegundos)
     access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
-    # Tiempo de expiración para refresh token (7 días en milisegundos)
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
-  springdoc:
-    swagger-ui:
-      path: /swagger-ui.html
-    api-docs:
-      path: /v3/api-docs
+# Documentación API
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
