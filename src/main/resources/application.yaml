@@ -3,10 +3,14 @@ spring:
     name: auth-security
   # Configuración PostgreSQL (Supabase/TiDB)
   datasource:
-    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db
+    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db&sslmode=require
     username: ${TIDB_USER}
     password: ${TIDB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
 
 # Configuración del Servidor
 server:
