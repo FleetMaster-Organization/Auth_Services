@@ -14,12 +14,11 @@ spring:
 
 # Configuración del Servidor
 server:
-  port: ${PORT:8081}
+  port: ${PORT:8080}
 
 # Eureka: Registro y Descubrimiento
 eureka:
   client:
-    enabled: false
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
