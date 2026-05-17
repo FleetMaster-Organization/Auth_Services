@@ -14,7 +14,7 @@ spring:
 
 # Configuración del Servidor
 server:
-  port: ${PORT:8080}
+  port: ${PORT:8081}
 
 # Eureka: Registro y Descubrimiento
 eureka:
