@@ -1,6 +1,9 @@
 package com.services.auth.exception;
 
 import com.services.auth.dto.response.ErrorResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +19,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
@@ -67,15 +72,31 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(
-            RuntimeException ex, WebRequest request) {
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDataAccessException(
+            DataAccessException ex, WebRequest request) {
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ErrorResponse.of(
-                        HttpStatus.UNAUTHORIZED.value(),
-                        "Unauthorized",
-                        ex.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "Internal Server Error",
+                        "Error de acceso a base de datos",
+                        extractPath(request)
+                )
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex, WebRequest request) {
+
+        log.error("Unhandled exception at {}: {}", extractPath(request), ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ErrorResponse.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        "Internal Server Error",
+                        "Error interno del servidor",
                         extractPath(request)
                 )
         );
