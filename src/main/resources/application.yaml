@@ -3,7 +3,7 @@ spring:
     name: auth-security
   # Configuración PostgreSQL (Supabase/TiDB)
   datasource:
-    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db&sslmode=require
+    url: jdbc:postgresql://${TIDB_HOST}:${TIDB_PORT:6543}/${TIDB_DB}?currentSchema=auth_db&sslmode=require&prepareThreshold=0
     username: ${TIDB_USER}
     password: ${TIDB_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -19,6 +19,7 @@ server:
 # Eureka: Registro y Descubrimiento
 eureka:
   client:
+    enabled: false
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
