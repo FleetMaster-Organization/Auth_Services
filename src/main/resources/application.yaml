@@ -19,7 +19,7 @@ server:
 # Eureka: Registro y Descubrimiento
 eureka:
   client:
-    enabled: false
+    enabled: true
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
   instance:
