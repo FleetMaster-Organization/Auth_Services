@@ -86,6 +86,31 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex, WebRequest request) {
+
+        log.warn("Business rule or runtime exception at {}: {}", extractPath(request), ex.getMessage());
+
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        String message = ex.getMessage();
+        
+        if (message != null && message.contains("no encontrado")) {
+            status = HttpStatus.NOT_FOUND;
+        } else if (message != null && message.contains("ya está registrado")) {
+            status = HttpStatus.CONFLICT;
+        }
+
+        return ResponseEntity.status(status).body(
+                ErrorResponse.of(
+                        status.value(),
+                        status.getReasonPhrase(),
+                        message,
+                        extractPath(request)
+                )
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex, WebRequest request) {
