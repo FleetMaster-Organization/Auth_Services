@@ -38,8 +38,10 @@ public class AdminUserService {
             throw new RuntimeException("El email ya está registrado: " + request.getEmail());
         }
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+        Role role = findRoleWithFallback(request.getRoleId());
+        if (role == null) {
+            throw new RuntimeException("Rol no encontrado");
+        }
 
         User user = User.builder()
                 .fullName(request.getFullName())
@@ -73,8 +75,10 @@ public class AdminUserService {
         }
 
         if (request.getRoleId() != null) {
-            Role newRole = roleRepository.findById(request.getRoleId())
-                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            Role newRole = findRoleWithFallback(request.getRoleId());
+            if (newRole == null) {
+                throw new RuntimeException("Rol no encontrado");
+            }
             String oldRoles = user.getRoles().stream().map(Role::getNameRole).collect(Collectors.joining(","));
             saveAudit(user, "UPDATE", "roles", oldRoles, newRole.getNameRole(), adminId);
             user.getRoles().clear();
@@ -133,6 +137,30 @@ public class AdminUserService {
     private User findUserOrThrow(UUID idUser) {
         return userRepository.findByIdWithRoles(idUser)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    private Role findRoleWithFallback(UUID roleId) {
+        if (roleId == null) {
+            return null;
+        }
+        return roleRepository.findById(roleId)
+                .orElseGet(() -> {
+                    String roleName = null;
+                    String idStr = roleId.toString();
+                    if (idStr.equals("ff4b650b-9765-4859-9545-fe28f168d60c")) {
+                        roleName = "ROLE_ADMINISTRADOR";
+                    } else if (idStr.equals("dd34042b-f399-48a9-a6ef-688df176dbe9")) {
+                        roleName = "ROLE_COORDINADOR";
+                    } else if (idStr.equals("9b56ce70-d44e-4006-92aa-fbd86bfd6087")) {
+                        roleName = "ROLE_DESPACHADOR";
+                    } else if (idStr.equals("345625ce-b6c0-4a06-96ec-b4fdbc6e14c8")) {
+                        roleName = "ROLE_MECANICO";
+                    }
+                    if (roleName != null) {
+                        return roleRepository.findByNameRole(roleName).orElse(null);
+                    }
+                    return null;
+                });
     }
 
     private void saveAudit(User user, String actionType, String field,
